@@ -23,6 +23,7 @@ import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { useEffect } from 'react';
 import SubscriptionBanner from './components/SubscriptionBanner';
 import SubscriptionPaywall from './components/SubscriptionPaywall';
+import SubscriptionModal from './components/SubscriptionModal';
 
 export type View = 'companies' | 'products' | 'dashboard';
 
@@ -52,6 +53,7 @@ export default function App() {
 
   const [companySearchTerm, setCompanySearchTerm] = useState('');
   const [employeeSearchTerm, setEmployeeSearchTerm] = useState('');
+  const [isSubscriptionModalOpen, setIsSubscriptionModalOpen] = useState(false);
 
   // Handle Auth
   useEffect(() => {
@@ -400,7 +402,12 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-background">
-      {data.subscription && <SubscriptionBanner subscription={data.subscription} />}
+      {data.subscription && (
+        <SubscriptionBanner 
+          subscription={data.subscription} 
+          onRenew={() => setIsSubscriptionModalOpen(true)} 
+        />
+      )}
       <Header 
         title={headerTitle} 
         onBack={onBack} 
@@ -485,6 +492,14 @@ export default function App() {
         title="Confirmar Exclusão de Produto"
         message="Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita."
       />
+
+      {data.subscription && (
+        <SubscriptionModal 
+          isOpen={isSubscriptionModalOpen}
+          onClose={() => setIsSubscriptionModalOpen(false)}
+          subscription={data.subscription}
+        />
+      )}
     </div>
   );
 }

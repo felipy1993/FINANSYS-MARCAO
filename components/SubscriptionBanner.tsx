@@ -4,9 +4,10 @@ import { Subscription } from '../types';
 
 interface SubscriptionBannerProps {
   subscription: Subscription;
+  onRenew: () => void;
 }
 
-const SubscriptionBanner: React.FC<SubscriptionBannerProps> = ({ subscription }) => {
+const SubscriptionBanner: React.FC<SubscriptionBannerProps> = ({ subscription, onRenew }) => {
   const daysRemaining = Math.ceil((new Date(subscription.expirationDate).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
   
   if (daysRemaining > 5) return null;
@@ -24,7 +25,7 @@ const SubscriptionBanner: React.FC<SubscriptionBannerProps> = ({ subscription })
           : `Sua assinatura vence em ${daysRemaining} ${daysRemaining === 1 ? 'dia' : 'dias'}.`}
       </span>
       <button 
-        onClick={() => alert("Para renovar, entre em contato via WhatsApp nas configurações.")}
+        onClick={onRenew}
         className={`px-3 py-1 rounded-full text-[10px] uppercase font-black transition-all ${
           isUrgent ? 'bg-white text-rose-600' : 'bg-slate-900 text-white'
         }`}
