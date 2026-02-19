@@ -37,3 +37,11 @@ export interface Payment {
   date: string; // ISO string
   method: 'pix' | 'cash' | 'card';
 }
+
+export interface Subscription {
+  status: 'active' | 'expired' | 'trial';
+  expirationDate: string; // ISO string
+  pixKey: string;
+  pixCopiaCola: string;
+  monthlyValue: number;
+}

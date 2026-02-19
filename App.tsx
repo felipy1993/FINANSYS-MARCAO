@@ -21,6 +21,8 @@ import Login from './components/Login';
 import { auth } from './firebase';
 import { onAuthStateChanged, signOut, User } from 'firebase/auth';
 import { useEffect } from 'react';
+import SubscriptionBanner from './components/SubscriptionBanner';
+import SubscriptionPaywall from './components/SubscriptionPaywall';
 
 export type View = 'companies' | 'products' | 'dashboard';
 
@@ -388,8 +390,17 @@ export default function App() {
     return <Login />;
   }
 
+  // Lógica de bloqueio por assinatura
+  const isExpired = data.subscription?.status === 'expired' || 
+                   (data.subscription?.expirationDate && new Date(data.subscription.expirationDate).getTime() < Date.now());
+
+  if (isExpired && data.subscription) {
+    return <SubscriptionPaywall subscription={data.subscription} />;
+  }
+
   return (
     <div className="min-h-screen bg-background">
+      {data.subscription && <SubscriptionBanner subscription={data.subscription} />}
       <Header 
         title={headerTitle} 
         onBack={onBack} 

@@ -1,6 +1,6 @@
 
 import { useState, useCallback, useEffect } from 'react';
-import { Company, Employee, Product, Consumption, ConsumptionItem, Payment } from '../types';
+import { Company, Employee, Product, Consumption, ConsumptionItem, Payment, Subscription } from '../types';
 import { db } from '../firebase';
 import { 
   collection, 
@@ -22,6 +22,7 @@ const useData = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [consumptions, setConsumptions] = useState<Consumption[]>([]);
+  const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
 
   // Subscribe to collections
@@ -43,11 +44,30 @@ const useData = () => {
       setLoading(false);
     });
 
+    const subscriptionRef = doc(db, 'system', 'subscription');
+    const unsubSubscription = onSnapshot(subscriptionRef, (snapshot) => {
+      if (snapshot.exists()) {
+        setSubscription(snapshot.data() as Subscription);
+      } else {
+        // Inicializa se não existir (Trial de 7 dias padrão)
+        const initialSub: Subscription = {
+          status: 'trial',
+          expirationDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          pixKey: '17997557625',
+          pixCopiaCola: '',
+          monthlyValue: 0
+        };
+        setSubscription(initialSub);
+        setDoc(subscriptionRef, initialSub);
+      }
+    });
+
     return () => {
       unsubCompanies();
       unsubEmployees();
       unsubProducts();
       unsubConsumptions();
+      unsubSubscription();
     };
   }, []);
 
@@ -347,6 +367,7 @@ const useData = () => {
     getCompanyPerformance,
     getSalesByProductCategory,
     getBestSellingProducts,
+    subscription
   };
 };
 
