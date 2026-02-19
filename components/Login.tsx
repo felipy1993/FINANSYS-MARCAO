@@ -60,6 +60,7 @@ const Login: React.FC = () => {
                             onChange={(e) => setEmail(e.target.value)}
                             placeholder="marcao@exemplo.com"
                             className="bg-slate-900/50 border-slate-700/50 h-14 !lowercase"
+                            noUppercase
                             required
                         />
                     </div>
@@ -73,6 +74,7 @@ const Login: React.FC = () => {
                                 onChange={(e) => setPassword(e.target.value)}
                                 placeholder="••••••••"
                                 className="bg-slate-900/50 border-slate-700/50 h-14 pr-12"
+                                noUppercase
                                 required
                             />
                             <button
