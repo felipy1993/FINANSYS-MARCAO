@@ -81,10 +81,9 @@ Principal Empresa: ${data.companyPerformance[0]?.companyName || 'N/A'}
       <style>{`
         .report-preview-canvas-container {
           background: #f1f5f9;
-          padding: 20px;
+          padding: 10px;
           border-radius: 12px;
-          max-height: 70vh;
-          overflow-y: auto;
+          margin-bottom: 20px;
         }
 
         .report-sheet-canvas {
@@ -95,6 +94,18 @@ Principal Empresa: ${data.companyPerformance[0]?.companyName || 'N/A'}
           margin: 0 auto;
           padding: 30px;
           font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        @media (max-width: 640px) {
+          .report-sheet-canvas {
+            padding: 15px;
+          }
+          .report-sheet-canvas h1 {
+            font-size: 1.5rem !important;
+          }
+          .report-sheet-canvas h2 {
+            font-size: 1rem !important;
+          }
         }
 
         .report-sheet-canvas * {

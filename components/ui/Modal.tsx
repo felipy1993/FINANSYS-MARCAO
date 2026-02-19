@@ -39,16 +39,16 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
       onClick={handleClose}
     >
       <div 
-        className={`bg-surface rounded-lg shadow-xl w-11/12 max-w-lg m-4 ${isOpen ? 'animate-scale-in' : 'animate-scale-out'}`}
+        className={`bg-surface rounded-lg shadow-xl w-11/12 max-w-lg m-4 flex flex-col max-h-[90vh] ${isOpen ? 'animate-scale-in' : 'animate-scale-out'}`}
         onClick={e => e.stopPropagation()}
       >
-        <div className="flex justify-between items-center p-4 border-b border-border">
+        <div className="flex justify-between items-center p-4 border-b border-border shrink-0">
           <h2 className="text-xl font-bold text-onSurface">{title}</h2>
           <button onClick={handleClose} className="text-onSurfaceMuted hover:text-onSurface">
             <i className="fas fa-times fa-lg"></i>
           </button>
         </div>
-        <div className="p-4 md:p-6">
+        <div className="p-4 md:p-6 overflow-y-auto">
           {children}
         </div>
       </div>
