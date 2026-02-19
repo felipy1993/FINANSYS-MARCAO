@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Employee } from '../types';
+import { Employee, Company } from '../types';
 import { Input } from './ui/Input';
 
 interface EmployeeListProps {
@@ -10,9 +10,10 @@ interface EmployeeListProps {
   getPendingTotalForEmployee: (employeeId: string) => number;
   searchTerm: string;
   onSearchChange: (term: string) => void;
+  companies: Company[];
 }
 
-const EmployeeList: React.FC<EmployeeListProps> = ({ employees, onSelectEmployee, onAddSale, getPendingTotalForEmployee, searchTerm, onSearchChange }) => {
+const EmployeeList: React.FC<EmployeeListProps> = ({ employees, onSelectEmployee, onAddSale, getPendingTotalForEmployee, searchTerm, onSearchChange, companies }) => {
   return (
     <div className="space-y-6">
       <div className="relative">
@@ -39,7 +40,10 @@ const EmployeeList: React.FC<EmployeeListProps> = ({ employees, onSelectEmployee
               >
                 <div>
                   <p className="font-semibold text-lg text-onSurface">{employee.name}</p>
-                  <p className="text-sm text-onSurfaceMuted">{employee.whatsapp}</p>
+                  <p className="text-xs text-primary font-medium uppercase tracking-wider">
+                    {companies.find(c => c.id === employee.companyId)?.name || 'Sem Empresa'}
+                  </p>
+                  <p className="text-sm text-onSurfaceMuted mt-1">{employee.whatsapp}</p>
                   <p className={`mt-2 font-bold ${pendingTotal > 0 ? 'text-red-400' : 'text-green-400'}`}>
                     Pendente: R$ {pendingTotal.toFixed(2)}
                   </p>

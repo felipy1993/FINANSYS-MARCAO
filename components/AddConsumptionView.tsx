@@ -175,9 +175,27 @@ const AddConsumptionView: React.FC<AddConsumptionViewProps> = ({
                 <Select id="employee" value={selectedEmployeeId} onChange={e => setSelectedEmployeeId(e.target.value)} disabled={isEditMode}>
                   {isEditMode && consumptionToEdit ? 
                       <option value={consumptionToEdit.employeeId}>
-                        {employees.find(e => e.id === consumptionToEdit.employeeId)?.name}
+                        {(() => {
+                          const emp = employees.find(e => e.id === consumptionToEdit.employeeId);
+                          const comp = companies.find(c => c.id === emp?.companyId);
+                          return `${emp?.name} — ${comp?.name || 'Sem Empresa'}`;
+                        })()}
                       </option>
-                    : employees.map(e => <option key={e.id} value={e.id}>{e.name}</option>)
+                    : [...employees]
+                        .sort((a, b) => {
+                          const compA = companies.find(c => c.id === a.companyId)?.name || '';
+                          const compB = companies.find(c => c.id === b.companyId)?.name || '';
+                          if (compA !== compB) return compA.localeCompare(compB);
+                          return a.name.localeCompare(b.name);
+                        })
+                        .map(e => {
+                          const company = companies.find(c => c.id === e.companyId);
+                          return (
+                            <option key={e.id} value={e.id}>
+                              {e.name} — {company?.name || 'Sem Empresa'}
+                            </option>
+                          );
+                        })
                   }
                 </Select>
             </div>

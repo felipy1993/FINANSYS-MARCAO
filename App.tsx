@@ -340,6 +340,7 @@ export default function App() {
                 getPendingTotalForEmployee={data.getPendingTotalForEmployee}
                 searchTerm={employeeSearchTerm}
                 onSearchChange={setEmployeeSearchTerm}
+                companies={data.companies}
               />
           );
         }
