@@ -207,6 +207,14 @@ const useData = () => {
     await setDoc(doc(db, 'products', id), newProduct);
   }, []);
 
+  const editProduct = useCallback(async (productId: string, name: string, price: number, type: 'snack' | 'drink' | 'food', stock: number) => {
+    await updateDoc(doc(db, 'products', productId), { name, price, type, stock });
+  }, []);
+
+  const deleteProduct = useCallback(async (productId: string) => {
+    await deleteDoc(doc(db, 'products', productId));
+  }, []);
+
   const addEmployee = useCallback(async (name: string, whatsapp: string, companyId: string): Promise<Employee> => {
     const id = `e-${Date.now()}`;
     const newEmployee: Employee = { id, name, whatsapp, companyId };
@@ -331,6 +339,8 @@ const useData = () => {
     calculateConsumptionTotal,
     addCompany,
     addProduct,
+    editProduct,
+    deleteProduct,
     addEmployee,
     updateStock,
     getMonthlyRevenue,

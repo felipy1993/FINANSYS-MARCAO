@@ -9,14 +9,26 @@ import { Product } from '../types';
 interface AddProductModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddProduct: (name: string, price: number, type: 'snack' | 'drink' | 'food', stock: number) => void;
+  onSaveProduct: (name: string, price: number, type: Product['type'], stock: number, id?: string) => void;
+  product?: Product | null;
 }
 
-const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onAddProduct }) => {
+const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onSaveProduct, product }) => {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [type, setType] = useState<Product['type']>('snack');
   const [stock, setStock] = useState('');
+
+  React.useEffect(() => {
+    if (product) {
+      setName(product.name);
+      setPrice(product.price.toString());
+      setType(product.type);
+      setStock(product.stock.toString());
+    } else {
+      resetState();
+    }
+  }, [product, isOpen]);
 
   const resetState = () => {
     setName('');
@@ -30,7 +42,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onAd
     const priceNumber = parseFloat(price);
     const stockNumber = parseInt(stock, 10);
     if (name.trim() && !isNaN(priceNumber) && priceNumber > 0 && !isNaN(stockNumber) && stockNumber >= 0) {
-      onAddProduct(name.trim(), priceNumber, type, stockNumber);
+      onSaveProduct(name.trim(), priceNumber, type, stockNumber, product?.id);
       resetState();
       onClose();
     }
@@ -42,7 +54,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onAd
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Cadastrar Novo Produto">
+    <Modal isOpen={isOpen} onClose={handleClose} title={product ? "Editar Produto" : "Cadastrar Novo Produto"}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="productName" className="block text-sm font-medium text-onSurfaceMuted mb-1">
@@ -105,7 +117,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onAd
             Cancelar
           </Button>
           <Button type="submit" disabled={!name.trim() || !price || parseFloat(price) <= 0 || !stock || parseInt(stock, 10) < 0}>
-            Salvar Produto
+            {product ? "Atualizar Produto" : "Salvar Produto"}
           </Button>
         </div>
       </form>

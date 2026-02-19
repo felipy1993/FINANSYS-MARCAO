@@ -6,9 +6,11 @@ import { Card } from './ui/Card';
 interface ProductListProps {
   products: Product[];
   onUpdateStock: (productId: string, delta: number) => void;
+  onEdit: (product: Product) => void;
+  onDelete: (productId: string) => void;
 }
 
-const ProductList: React.FC<ProductListProps> = ({ products, onUpdateStock }) => {
+const ProductList: React.FC<ProductListProps> = ({ products, onUpdateStock, onEdit, onDelete }) => {
   let itemIndex = 0;
   const groupedProducts = useMemo(() => {
     return products.reduce((acc, product) => {
@@ -49,16 +51,38 @@ const ProductList: React.FC<ProductListProps> = ({ products, onUpdateStock }) =>
                 return (
                     <Card 
                         key={product.id}
-                        className="animate-fade-in-up"
+                        className="animate-fade-in-up group relative overflow-hidden"
                         style={{ animationDelay: `${currentIndex * 50}ms` }}
                     >
-                      <p className="font-semibold text-lg text-onSurface">{product.name}</p>
-                      <div className="flex justify-between items-center mt-2">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <p className="font-semibold text-lg text-onSurface">{product.name}</p>
                           <p className="text-sm text-onSurfaceMuted capitalize">{getTypeLabel(product.type)}</p>
-                          <p className="font-bold text-primary">
+                        </div>
+                        <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                          <button 
+                            onClick={() => onEdit(product)}
+                            className="p-2 rounded-full bg-surface-variant text-onSurfaceVariant hover:bg-primary/10 hover:text-primary transition-colors"
+                            title="Editar"
+                          >
+                            <i className="fas fa-edit"></i>
+                          </button>
+                          <button 
+                            onClick={() => onDelete(product.id)}
+                            className="p-2 rounded-full bg-surface-variant text-onSurfaceVariant hover:bg-error/10 hover:text-error transition-colors"
+                            title="Excluir"
+                          >
+                            <i className="fas fa-trash-alt"></i>
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-between items-center mt-3">
+                          <p className="font-bold text-primary text-xl">
                               R$ {product.price.toFixed(2)}
                           </p>
                       </div>
+
                       <div className="flex justify-between items-center mt-4 pt-4 border-t border-border">
                           <span className="text-sm font-medium text-onSurfaceMuted">Estoque:</span>
                           <div className="flex items-center gap-2">

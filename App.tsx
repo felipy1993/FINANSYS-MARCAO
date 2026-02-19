@@ -1,6 +1,6 @@
 
 import React, { useState, useMemo } from 'react';
-import { Company, Employee, Consumption, Payment, ConsumptionItem } from './types';
+import { Company, Employee, Consumption, Payment, ConsumptionItem, Product } from './types';
 import useData from './hooks/useData';
 import Header from './components/Header';
 import CompanyList from './components/CompanyList';
@@ -44,6 +44,9 @@ export default function App() {
   // Edit/Delete states
   const [consumptionToEdit, setConsumptionToEdit] = useState<Consumption | null>(null);
   const [consumptionToDelete, setConsumptionToDelete] = useState<string | null>(null);
+  const [productToEdit, setProductToEdit] = useState<Product | null>(null);
+  const [productToDelete, setProductToDelete] = useState<string | null>(null);
+  const [isDeleteProductModalOpen, setDeleteProductModalOpen] = useState(false);
 
   const [companySearchTerm, setCompanySearchTerm] = useState('');
   const [employeeSearchTerm, setEmployeeSearchTerm] = useState('');
@@ -202,11 +205,43 @@ export default function App() {
       setConsumptionToDelete(null);
   }
 
+  const handleSaveProduct = async (name: string, price: number, type: Product['type'], stock: number, id?: string) => {
+    if (id) {
+      await data.editProduct(id, name, price, type, stock);
+    } else {
+      await data.addProduct(name, price, type, stock);
+    }
+    setProductToEdit(null);
+  };
+
+  const openEditProductModal = (product: Product) => {
+    setProductToEdit(product);
+    setAddProductModalOpen(true);
+  };
+
+  const openDeleteProductModal = (productId: string) => {
+    setProductToDelete(productId);
+    setDeleteProductModalOpen(true);
+  };
+
+  const confirmDeleteProduct = () => {
+    if (productToDelete) {
+      data.deleteProduct(productToDelete);
+    }
+    setDeleteProductModalOpen(false);
+    setProductToDelete(null);
+  };
+
   const handleCancelAddConsumption = () => {
     setIsAddingConsumption(false);
     if(consumptionToEdit) {
         setConsumptionToEdit(null);
     }
+  }
+
+  const handleCloseProductModal = () => {
+    setAddProductModalOpen(false);
+    setProductToEdit(null);
   }
 
 
@@ -331,6 +366,8 @@ export default function App() {
           <ProductList
             products={data.products}
             onUpdateStock={data.updateStock}
+            onEdit={openEditProductModal}
+            onDelete={openDeleteProductModal}
           />
         );
       default:
@@ -410,8 +447,9 @@ export default function App() {
 
       <AddProductModal
         isOpen={isAddProductModalOpen}
-        onClose={() => setAddProductModalOpen(false)}
-        onAddProduct={data.addProduct}
+        onClose={handleCloseProductModal}
+        onSaveProduct={handleSaveProduct}
+        product={productToEdit}
       />
 
       <AddEmployeeModal
@@ -426,6 +464,14 @@ export default function App() {
         onConfirm={confirmDelete}
         title="Confirmar Exclusão"
         message="Tem certeza que deseja excluir esta venda? Esta ação não pode ser desfeita e o estoque dos produtos será devolvido."
+      />
+
+      <ConfirmDeleteModal
+        isOpen={isDeleteProductModalOpen}
+        onClose={() => setDeleteProductModalOpen(false)}
+        onConfirm={confirmDeleteProduct}
+        title="Confirmar Exclusão de Produto"
+        message="Tem certeza que deseja excluir este produto? Esta ação não pode ser desfeita."
       />
     </div>
   );
