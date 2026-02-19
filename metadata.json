@@ -1,0 +1,6 @@
+
+{
+  "name": "Argent",
+  "description": "A mobile-first web application for vendors to track sales, manage employee tabs, and record payments within client companies. It includes features for consumption history, debt tracking, and generating WhatsApp payment receipts using AI.",
+  "requestFramePermissions": []
+}
