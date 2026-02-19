@@ -289,6 +289,7 @@ export default function App() {
               getPendingTotalForEmployee={data.getPendingTotalForEmployee}
               onEditConsumption={openEditModal}
               onDeleteConsumption={openDeleteModal}
+              onAddSale={() => setIsAddingConsumption(true)}
             />
           );
         }
@@ -297,6 +298,10 @@ export default function App() {
              <EmployeeList
                 employees={filteredEmployeesOfSelectedCompany}
                 onSelectEmployee={handleSelectEmployee}
+                onAddSale={(employee) => {
+                  setSelectedEmployee(employee);
+                  setIsAddingConsumption(true);
+                }}
                 getPendingTotalForEmployee={data.getPendingTotalForEmployee}
                 searchTerm={employeeSearchTerm}
                 onSearchChange={setEmployeeSearchTerm}

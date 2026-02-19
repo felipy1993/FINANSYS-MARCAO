@@ -19,9 +19,19 @@ interface EmployeeDetailProps {
   getPendingTotalForEmployee: (employeeId: string) => number;
   onEditConsumption: (consumption: Consumption) => void;
   onDeleteConsumption: (consumptionId: string) => void;
+  onAddSale: () => void;
 }
 
-const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ employee, consumptions, products, onRecordPayment, getPendingTotalForEmployee, onEditConsumption, onDeleteConsumption }) => {
+const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ 
+  employee, 
+  consumptions, 
+  products, 
+  onRecordPayment, 
+  getPendingTotalForEmployee, 
+  onEditConsumption, 
+  onDeleteConsumption,
+  onAddSale
+}) => {
   const [isReceiptModalOpen, setReceiptModalOpen] = useState(false);
   const [isDateRangeModalOpen, setIsDateRangeModalOpen] = useState(false);
   const [isPaymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -86,12 +96,15 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ employee, consumptions,
 
       <Card className="mb-6 bg-surface/50">
         <h3 className="text-lg font-bold text-onSurface">Ações Rápidas</h3>
-        <div className="flex flex-col sm:flex-row gap-3 mt-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-4">
+          <Button onClick={onAddSale} className="w-full bg-primary/20 hover:bg-primary/30 text-primary border-primary/30">
+            <i className="fas fa-plus-circle mr-2"></i> Nova Venda
+          </Button>
           <Button onClick={handleDailyReceipt} variant="outline" className="w-full">
             <i className="fas fa-calendar-day mr-2"></i> Recibo do Dia
           </Button>
           <Button onClick={() => setIsDateRangeModalOpen(true)} variant="outline" className="w-full">
-            <i className="fas fa-calendar-alt mr-2"></i> Recibo por Período
+            <i className="fas fa-calendar-alt mr-2"></i> Recibo Período
           </Button>
         </div>
       </Card>

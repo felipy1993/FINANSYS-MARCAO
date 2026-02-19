@@ -6,12 +6,13 @@ import { Input } from './ui/Input';
 interface EmployeeListProps {
   employees: Employee[];
   onSelectEmployee: (employee: Employee) => void;
+  onAddSale: (employee: Employee) => void;
   getPendingTotalForEmployee: (employeeId: string) => number;
   searchTerm: string;
   onSearchChange: (term: string) => void;
 }
 
-const EmployeeList: React.FC<EmployeeListProps> = ({ employees, onSelectEmployee, getPendingTotalForEmployee, searchTerm, onSearchChange }) => {
+const EmployeeList: React.FC<EmployeeListProps> = ({ employees, onSelectEmployee, onAddSale, getPendingTotalForEmployee, searchTerm, onSearchChange }) => {
   return (
     <div className="space-y-6">
       <div className="relative">
@@ -33,14 +34,26 @@ const EmployeeList: React.FC<EmployeeListProps> = ({ employees, onSelectEmployee
               <div 
                 key={employee.id} 
                 onClick={() => onSelectEmployee(employee)} 
-                className="p-4 bg-surface rounded-lg border border-border cursor-pointer hover:border-primary transition-colors hover:-translate-y-1 animate-fade-in-up"
+                className="p-4 bg-surface rounded-lg border border-border cursor-pointer hover:border-primary transition-colors hover:-translate-y-1 animate-fade-in-up flex justify-between items-start"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <p className="font-semibold text-lg text-onSurface">{employee.name}</p>
-                <p className="text-sm text-onSurfaceMuted">{employee.whatsapp}</p>
-                <p className={`mt-2 font-bold ${pendingTotal > 0 ? 'text-red-400' : 'text-green-400'}`}>
-                  Pendente: R$ {pendingTotal.toFixed(2)}
-                </p>
+                <div>
+                  <p className="font-semibold text-lg text-onSurface">{employee.name}</p>
+                  <p className="text-sm text-onSurfaceMuted">{employee.whatsapp}</p>
+                  <p className={`mt-2 font-bold ${pendingTotal > 0 ? 'text-red-400' : 'text-green-400'}`}>
+                    Pendente: R$ {pendingTotal.toFixed(2)}
+                  </p>
+                </div>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onAddSale(employee);
+                  }}
+                  className="p-2 bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition-colors"
+                  title="Nova Venda"
+                >
+                  <i className="fas fa-cart-plus text-xl"></i>
+                </button>
               </div>
             )
           })}
