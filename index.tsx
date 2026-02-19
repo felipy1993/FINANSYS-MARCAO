@@ -25,13 +25,20 @@ root.render(
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').then(registration => {
-      // Verifica atualizações em segundo plano
+      // Se houver um worker esperando, força ele a assumir e recarrega
+      if (registration.waiting) {
+        registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+        window.location.reload();
+      }
+
+      // Verifica atualizações enquanto o sistema está aberto
       registration.onupdatefound = () => {
         const installingWorker = registration.installing;
         if (installingWorker) {
           installingWorker.onstatechange = () => {
             if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // Nova versão detectada, recarrega a página automaticamente
+              // Nova versão detectada e instalada
+              console.log('Nova versão instalada, recarregando...');
               window.location.reload();
             }
           };
