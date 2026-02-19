@@ -14,8 +14,14 @@ export const Modal: React.FC<ModalProps> = ({ isOpen, onClose, title, children }
   useEffect(() => {
     if (isOpen) {
       setIsAnimating(true);
+    } else if (isAnimating) {
+      // Quando fechar por prop, espera a animação terminar para remover do DOM
+      const timer = setTimeout(() => {
+        setIsAnimating(false);
+      }, 200);
+      return () => clearTimeout(timer);
     }
-  }, [isOpen]);
+  }, [isOpen, isAnimating]);
 
   if (!isAnimating) return null;
 

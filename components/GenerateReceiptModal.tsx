@@ -26,7 +26,9 @@ const GenerateReceiptModal: React.FC<GenerateReceiptModalProps> = ({ isOpen, onC
   };
   
   const handleOpenWhatsApp = () => {
-    const whatsappUrl = `https://wa.me/${whatsappNumber}?text=${encodeURIComponent(receiptText)}`;
+    // Sanitize phone number (remove anything that's not a digit)
+    const sanitizedNumber = whatsappNumber.replace(/\D/g, '');
+    const whatsappUrl = `https://wa.me/${sanitizedNumber}?text=${encodeURIComponent(receiptText)}`;
     window.open(whatsappUrl, '_blank');
   };
 

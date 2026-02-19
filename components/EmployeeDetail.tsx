@@ -65,8 +65,11 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({
 
     if (paidConsumptions.length > 0) {
         const paymentInfo = { date: new Date().toISOString(), method: method };
-        // The total amount for the receipt is the sum of the paid consumptions, not the input amount
         setLastPayment({ consumptions: paidConsumptions, payment: paymentInfo });
+        // Automatically open the receipt modal after payment with a small delay for smooth animation
+        setTimeout(() => {
+            handleGenerateReceipt(paidConsumptions, 'payment', { payment: paymentInfo });
+        }, 300);
     } else {
         setLastPayment(null);
     }
