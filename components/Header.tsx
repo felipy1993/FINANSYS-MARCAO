@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Logo } from './ui/Logo';
 
 interface HeaderProps {
@@ -12,6 +12,29 @@ interface HeaderProps {
 }
 
 const Header: React.FC<HeaderProps> = ({ title, onBack, onAction, actionIcon, onLogout, showLogo }) => {
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(err => {
+        console.error(`Error attempting to enable full-screen mode: ${err.message}`);
+      });
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      }
+    }
+  };
+
   return (
     <header className="bg-surface shadow-md border-b border-border sticky top-0 z-30">
       <div className="max-w-4xl mx-auto py-3 px-4 md:px-6 lg:px-8 flex items-center justify-between">
@@ -28,12 +51,22 @@ const Header: React.FC<HeaderProps> = ({ title, onBack, onAction, actionIcon, on
           )}
         </div>
         
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1 md:gap-2">
+          {/* Botão Maximizar (Full Screen) */}
+          <button 
+            onClick={toggleFullscreen} 
+            title={isFullscreen ? "Sair da Tela Cheia" : "Maximizar"}
+            className="text-onSurfaceMuted hover:text-primary transition-colors h-10 w-10 flex items-center justify-center"
+          >
+            <i className={`fas ${isFullscreen ? 'fa-compress-arrows-alt' : 'fa-expand'} fa-lg`}></i>
+          </button>
+
           {onAction && actionIcon && (
             <button onClick={onAction} className="text-primary hover:text-primary-hover transition-colors h-10 w-10 flex items-center justify-center">
               <i className={`${actionIcon} fa-lg`}></i>
             </button>
           )}
+          
           {onLogout && (
             <button onClick={onLogout} title="Sair do Sistema" className="text-rose-400 hover:text-rose-500 transition-colors h-10 w-10 flex items-center justify-center border-l border-border pl-2">
               <i className="fas fa-sign-out-alt fa-lg"></i>
