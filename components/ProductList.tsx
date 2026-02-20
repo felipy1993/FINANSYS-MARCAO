@@ -25,16 +25,18 @@ const ProductList: React.FC<ProductListProps> = ({ products, onUpdateStock, onEd
   const categoryTitles: Record<Product['type'], string> = {
     snack: 'Salgados',
     food: 'Comidas',
-    drink: 'Bebidas'
+    drink: 'Bebidas',
+    dessert: 'Sobremesas'
   };
 
-  const categoryOrder: Product['type'][] = ['snack', 'food', 'drink'];
+  const categoryOrder: Product['type'][] = ['snack', 'food', 'drink', 'dessert'];
 
   const getTypeLabel = (type: Product['type']) => {
       const map = {
           snack: 'Salgado',
           food: 'Comida',
-          drink: 'Bebida'
+          drink: 'Bebida',
+          dessert: 'Sobremesa'
       }
       return map[type];
   }

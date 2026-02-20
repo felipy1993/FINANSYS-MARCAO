@@ -180,7 +180,7 @@ Principal Empresa: ${data.companyPerformance[0]?.companyName || 'N/A'}
                 {Object.entries(data.categorySales).map(([cat, val]) => (
                   <div key={cat} className="flex justify-between items-center text-xs">
                     <span className="font-bold text-slate-500 uppercase tracking-tight">
-                        {cat === 'snack' ? 'Salgados' : cat === 'food' ? 'Comidas' : cat === 'drink' ? 'Bebidas' : cat}
+                        {cat === 'snack' ? 'Salgados' : cat === 'food' ? 'Comidas' : cat === 'drink' ? 'Bebidas' : cat === 'dessert' ? 'Sobremesas' : cat}
                     </span>
                     <div className="flex-1 mx-4 border-b border-dotted border-slate-200" />
                     <span className="font-black text-slate-900">R$ {(val as number)?.toFixed(2) || '0,00'}</span>

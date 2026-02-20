@@ -94,6 +94,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ isOpen, onClose, onSa
                 <option value="snack">Salgado</option>
                 <option value="food">Comida</option>
                 <option value="drink">Bebida</option>
+                <option value="dessert">Sobremesa</option>
               </Select>
             </div>
         </div>

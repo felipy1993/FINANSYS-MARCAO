@@ -47,7 +47,8 @@ const Dashboard: React.FC<DashboardProps> = ({
     const categoryTitles: Record<Product['type'], string> = {
         snack: 'Salgados',
         food: 'Comidas',
-        drink: 'Bebidas'
+        drink: 'Bebidas',
+        dessert: 'Sobremesas'
     };
 
     const categoryChartData = {
@@ -60,11 +61,13 @@ const Dashboard: React.FC<DashboardProps> = ({
                     'rgba(99, 102, 241, 0.7)', // indigo-500
                     'rgba(16, 185, 129, 0.7)', // emerald-500
                     'rgba(239, 68, 68, 0.7)',   // red-500
+                    'rgba(245, 158, 11, 0.7)',  // amber-500
                 ],
                 borderColor: [
                     '#6366f1',
                     '#10b981',
                     '#ef4444',
+                    '#f59e0b',
                 ],
                 borderWidth: 1,
             },

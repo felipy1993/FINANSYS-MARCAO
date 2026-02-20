@@ -221,13 +221,13 @@ const useData = () => {
     await setDoc(doc(db, 'companies', id), newCompany);
   }, []);
 
-  const addProduct = useCallback(async (name: string, price: number, type: 'snack' | 'drink' | 'food', stock: number) => {
+  const addProduct = useCallback(async (name: string, price: number, type: 'snack' | 'drink' | 'food' | 'dessert', stock: number) => {
     const id = `p-${Date.now()}`;
     const newProduct: Product = { id, name, price, type, stock };
     await setDoc(doc(db, 'products', id), newProduct);
   }, []);
 
-  const editProduct = useCallback(async (productId: string, name: string, price: number, type: 'snack' | 'drink' | 'food', stock: number) => {
+  const editProduct = useCallback(async (productId: string, name: string, price: number, type: 'snack' | 'drink' | 'food' | 'dessert', stock: number) => {
     await updateDoc(doc(db, 'products', productId), { name, price, type, stock });
   }, []);
 
@@ -294,6 +294,7 @@ const useData = () => {
       snack: 0,
       food: 0,
       drink: 0,
+      dessert: 0,
     };
 
     consumptions

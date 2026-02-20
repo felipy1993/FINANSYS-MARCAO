@@ -3,7 +3,7 @@ export interface Product {
   id: string;
   name: string;
   price: number;
-  type: 'snack' | 'drink' | 'food';
+  type: 'snack' | 'drink' | 'food' | 'dessert';
   stock: number;
 }
 

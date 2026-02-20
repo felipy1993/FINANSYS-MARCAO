@@ -63,10 +63,11 @@ const AddConsumptionView: React.FC<AddConsumptionViewProps> = ({
   const categoryTitles: Record<Product['type'], string> = {
     snack: 'Salgados',
     food: 'Comidas',
-    drink: 'Bebidas'
+    drink: 'Bebidas',
+    dessert: 'Sobremesas'
   };
 
-  const categoryOrder: Product['type'][] = ['snack', 'food', 'drink'];
+  const categoryOrder: Product['type'][] = ['snack', 'food', 'drink', 'dessert'];
 
   useEffect(() => {
     if (isEditMode && consumptionToEdit) {
