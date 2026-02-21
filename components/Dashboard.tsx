@@ -8,11 +8,13 @@ import BestSellingProducts from './BestSellingProducts';
 import MonthlyReportModal from './MonthlyReportModal';
 
 interface DashboardProps {
-    getMonthlyRevenue: (date: Date) => number;
+    getMonthlyRevenue: () => number;
     getTotalPendingAmount: () => number;
-    getCompanyPerformance: (date: Date) => { companyName: string; totalSales: number }[];
-    getSalesByCategory: (date: Date) => Record<Product['type'], number>;
-    getBestSellingProducts: (date: Date) => { name: string; quantity: number, totalValue: number }[];
+    getCompanyPerformance: () => { companyName: string; totalSales: number }[];
+    getSalesByCategory: () => Record<Product['type'], number>;
+    getBestSellingProducts: () => { name: string; quantity: number, totalValue: number }[];
+    periodFilter: { startDate: string, endDate: string };
+    setPeriodFilter: (filter: { startDate: string, endDate: string }) => void;
 }
 
 const Dashboard: React.FC<DashboardProps> = ({ 
@@ -20,25 +22,17 @@ const Dashboard: React.FC<DashboardProps> = ({
     getTotalPendingAmount,
     getCompanyPerformance, 
     getSalesByCategory,
-    getBestSellingProducts 
+    getBestSellingProducts,
+    periodFilter,
+    setPeriodFilter
 }) => {
-    const [currentMonth, setCurrentMonth] = useState(() => {
-        const now = new Date();
-        return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
-    });
     const [isReportOpen, setIsReportOpen] = useState(false);
 
-    const selectedDate = useMemo(() => {
-        const [year, month] = currentMonth.split('-').map(Number);
-        // Creates a date in the local timezone
-        return new Date(year, month - 1, 1);
-    }, [currentMonth]);
-
-    const monthlyRevenue = useMemo(() => getMonthlyRevenue(selectedDate), [getMonthlyRevenue, selectedDate]);
+    const monthlyRevenue = useMemo(() => getMonthlyRevenue(), [getMonthlyRevenue]);
     const totalPendingAmount = useMemo(() => getTotalPendingAmount(), [getTotalPendingAmount]);
-    const companyPerformance = useMemo(() => getCompanyPerformance(selectedDate), [getCompanyPerformance, selectedDate]);
-    const salesByCategory = useMemo(() => getSalesByCategory(selectedDate), [getSalesByCategory, selectedDate]);
-    const bestSellingProducts = useMemo(() => getBestSellingProducts(selectedDate), [getBestSellingProducts, selectedDate]);
+    const companyPerformance = useMemo(() => getCompanyPerformance(), [getCompanyPerformance]);
+    const salesByCategory = useMemo(() => getSalesByCategory(), [getSalesByCategory]);
+    const bestSellingProducts = useMemo(() => getBestSellingProducts(), [getBestSellingProducts]);
 
     const topCompany = companyPerformance.length > 0 ? companyPerformance[0] : null;
     const topProduct = bestSellingProducts.length > 0 ? bestSellingProducts[0] : null;
@@ -74,8 +68,11 @@ const Dashboard: React.FC<DashboardProps> = ({
         ],
     };
     
-    const formattedMonth = selectedDate.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
-
+    const startObj = new Date(periodFilter.startDate);
+    const endObj = new Date(periodFilter.endDate);
+    const formattedMonth = startObj.getMonth() === endObj.getMonth() 
+      ? startObj.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' })
+      : `${startObj.toLocaleDateString('pt-BR', { month: 'short' })} a ${endObj.toLocaleDateString('pt-BR', { month: 'short', year: 'numeric'})}`;
 
     return (
         <div className="space-y-6">
@@ -90,12 +87,34 @@ const Dashboard: React.FC<DashboardProps> = ({
                         <i className="fas fa-file-alt"></i>
                     </button>
                 </div>
-                <Input
-                    type="month"
-                    value={currentMonth}
-                    onChange={(e) => setCurrentMonth(e.target.value)}
-                    className="max-w-xs"
-                />
+                <div className="flex flex-wrap items-center gap-2">
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm text-onSurfaceMuted">De:</label>
+                      <Input
+                          type="date"
+                          value={periodFilter.startDate.split('T')[0]}
+                          onChange={(e) => {
+                            const date = new Date(e.target.value);
+                            date.setHours(0,0,0,0);
+                            setPeriodFilter({...periodFilter, startDate: date.toISOString()});
+                          }}
+                          className="w-36"
+                      />
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <label className="text-sm text-onSurfaceMuted">Até:</label>
+                      <Input
+                          type="date"
+                          value={periodFilter.endDate.split('T')[0]}
+                          onChange={(e) => {
+                            const date = new Date(e.target.value);
+                            date.setHours(23,59,59,999);
+                            setPeriodFilter({...periodFilter, endDate: date.toISOString()});
+                          }}
+                          className="w-36"
+                      />
+                    </div>
+                </div>
             </div>
             
             {/* KPIs */}

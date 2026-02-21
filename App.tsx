@@ -315,6 +315,8 @@ export default function App() {
               getCompanyPerformance={data.getCompanyPerformance}
               getSalesByCategory={data.getSalesByProductCategory}
               getBestSellingProducts={data.getBestSellingProducts}
+              periodFilter={data.periodFilter}
+              setPeriodFilter={data.setPeriodFilter}
           />
         );
       case 'companies':

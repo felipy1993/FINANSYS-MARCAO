@@ -13,7 +13,8 @@ import {
   orderBy,
   setDoc,
   getDocs,
-  writeBatch
+  writeBatch,
+  where
 } from 'firebase/firestore';
 import { initialCompanies, initialEmployees, initialProducts, initialConsumptions } from '../data/mockData';
 
@@ -22,8 +23,32 @@ const useData = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
   const [consumptions, setConsumptions] = useState<Consumption[]>([]);
+  const [pendingConsumptions, setPendingConsumptions] = useState<Consumption[]>([]);
+  const [periodConsumptions, setPeriodConsumptions] = useState<Consumption[]>([]);
+
+  const defaultStart = new Date();
+  defaultStart.setDate(1);
+  defaultStart.setHours(0,0,0,0);
+  
+  const defaultEnd = new Date(defaultStart);
+  defaultEnd.setMonth(defaultEnd.getMonth() + 1);
+  defaultEnd.setDate(0);
+  defaultEnd.setHours(23,59,59,999);
+
+  const [periodFilter, setPeriodFilter] = useState({ 
+      startDate: defaultStart.toISOString(), 
+      endDate: defaultEnd.toISOString() 
+  });
+
   const [subscription, setSubscription] = useState<Subscription | null>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+     const map = new Map<string, Consumption>();
+     pendingConsumptions.forEach(c => map.set(c.id, c));
+     periodConsumptions.forEach(c => map.set(c.id, c));
+     setConsumptions(Array.from(map.values()).sort((a,b) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+  }, [pendingConsumptions, periodConsumptions]);
 
   // Subscribe to collections
   useEffect(() => {
@@ -39,17 +64,11 @@ const useData = () => {
       setProducts(snap.docs.map(doc => doc.data() as Product));
     });
 
-    const unsubConsumptions = onSnapshot(query(collection(db, 'consumptions'), orderBy('date', 'desc')), (snap) => {
-      setConsumptions(snap.docs.map(doc => doc.data() as Consumption));
-      setLoading(false);
-    });
-
     const subscriptionRef = doc(db, 'system', 'subscription');
     const unsubSubscription = onSnapshot(subscriptionRef, (snapshot) => {
       if (snapshot.exists()) {
         setSubscription(snapshot.data() as Subscription);
       } else {
-        // Inicializa se não existir (Trial de 7 dias padrão)
         const initialSub: Subscription = {
           status: 'trial',
           expirationDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
@@ -66,10 +85,39 @@ const useData = () => {
       unsubCompanies();
       unsubEmployees();
       unsubProducts();
-      unsubConsumptions();
       unsubSubscription();
     };
   }, []);
+
+  useEffect(() => {
+    setLoading(true);
+    
+    // Todos os não pagos (fiados), independentemente da data
+    const unsubPending = onSnapshot(query(collection(db, 'consumptions'), where('payment', '==', null)), (snap) => {
+        setPendingConsumptions(snap.docs.map(doc => doc.data() as Consumption));
+        setLoading(false);
+    });
+
+    // Consumos associados ao período selecionado
+    // Utilizamos payment.date ou apenas data? 
+    // Data do consumo em si para não perder itens pagos em outros meses quando filtrado:
+    const unsubPeriod = onSnapshot(query(
+        collection(db, 'consumptions'), 
+        where('date', '>=', periodFilter.startDate), 
+        where('date', '<=', periodFilter.endDate)
+    ), (snap) => {
+        setPeriodConsumptions(snap.docs.map(doc => doc.data() as Consumption));
+        setLoading(false);
+    });
+
+    // Nota: itens baixados em unsubPeriod vão garantir que o Dashboard consiga ver as vendas do mês.
+    // Itens pendentes sempre serão baixados por unsubPending, não importa se são meses ou anos antigos!
+
+    return () => {
+      unsubPending();
+      unsubPeriod();
+    };
+  }, [periodFilter.startDate, periodFilter.endDate]);
 
   const calculateConsumptionTotal = useCallback((consumption: Consumption) => {
     return consumption.items.reduce((total, item) => total + item.priceAtTime * item.quantity, 0);
@@ -250,23 +298,16 @@ const useData = () => {
     }
   }, [products]);
 
-  const getMonthlyRevenue = useCallback((date: Date = new Date()) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-
+  const getMonthlyRevenue = useCallback(() => {
     return consumptions
       .filter(c => {
         if (!c.payment) return false;
-        const paymentDate = new Date(c.payment.date);
-        return paymentDate.getFullYear() === year && paymentDate.getMonth() === month;
+        return c.payment.date >= periodFilter.startDate && c.payment.date <= periodFilter.endDate;
       })
       .reduce((total, c) => total + calculateConsumptionTotal(c), 0);
-  }, [consumptions, calculateConsumptionTotal]);
+  }, [consumptions, calculateConsumptionTotal, periodFilter]);
 
-  const getCompanyPerformance = useCallback((date: Date = new Date()) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-
+  const getCompanyPerformance = useCallback(() => {
     const performance = companies.map(company => {
       const companyEmployeeIds = employees
         .filter(e => e.companyId === company.id)
@@ -275,8 +316,7 @@ const useData = () => {
       const totalSales = consumptions
         .filter(c => {
           if (!c.payment || !companyEmployeeIds.includes(c.employeeId)) return false;
-          const paymentDate = new Date(c.payment.date);
-          return paymentDate.getFullYear() === year && paymentDate.getMonth() === month;
+          return c.payment.date >= periodFilter.startDate && c.payment.date <= periodFilter.endDate;
         })
         .reduce((total, c) => total + calculateConsumptionTotal(c), 0);
         
@@ -284,12 +324,9 @@ const useData = () => {
     });
 
     return performance.sort((a, b) => b.totalSales - a.totalSales);
-  }, [companies, employees, consumptions, calculateConsumptionTotal]);
+  }, [companies, employees, consumptions, calculateConsumptionTotal, periodFilter]);
   
-  const getSalesByProductCategory = useCallback((date: Date = new Date()) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-    
+  const getSalesByProductCategory = useCallback(() => {
     const sales: Record<Product['type'], number> = {
       snack: 0,
       food: 0,
@@ -300,8 +337,7 @@ const useData = () => {
     consumptions
       .filter(c => {
         if (!c.payment) return false;
-        const paymentDate = new Date(c.payment.date);
-        return paymentDate.getFullYear() === year && paymentDate.getMonth() === month;
+        return c.payment.date >= periodFilter.startDate && c.payment.date <= periodFilter.endDate;
       })
       .forEach(c => {
         c.items.forEach(item => {
@@ -313,19 +349,15 @@ const useData = () => {
       });
 
     return sales;
-  }, [consumptions, products]);
+  }, [consumptions, products, periodFilter]);
 
-  const getBestSellingProducts = useCallback((date: Date = new Date()) => {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-
+  const getBestSellingProducts = useCallback(() => {
     const productSales: Record<string, {name: string, quantity: number, totalValue: number}> = {};
 
     consumptions
       .filter(c => {
         if (!c.payment) return false;
-        const paymentDate = new Date(c.payment.date);
-        return paymentDate.getFullYear() === year && paymentDate.getMonth() === month;
+        return c.payment.date >= periodFilter.startDate && c.payment.date <= periodFilter.endDate;
       })
       .forEach(c => {
         c.items.forEach(item => {
@@ -341,7 +373,7 @@ const useData = () => {
     const sortedProducts = Object.values(productSales).sort((a,b) => b.totalValue - a.totalValue);
     
     return sortedProducts;
-  }, [consumptions, products]);
+  }, [consumptions, products, periodFilter]);
 
 
   return {
@@ -368,7 +400,9 @@ const useData = () => {
     getCompanyPerformance,
     getSalesByProductCategory,
     getBestSellingProducts,
-    subscription
+    subscription,
+    periodFilter,
+    setPeriodFilter
   };
 };
 
