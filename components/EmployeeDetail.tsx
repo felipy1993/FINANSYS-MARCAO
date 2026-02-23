@@ -20,6 +20,7 @@ interface EmployeeDetailProps {
   onEditConsumption: (consumption: Consumption) => void;
   onDeleteConsumption: (consumptionId: string) => void;
   onAddSale: () => void;
+  onEditEmployeeInfo: (employee: Employee) => void;
 }
 
 const EmployeeDetail: React.FC<EmployeeDetailProps> = ({ 
@@ -30,7 +31,8 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({
   getPendingTotalForEmployee, 
   onEditConsumption, 
   onDeleteConsumption,
-  onAddSale
+  onAddSale,
+  onEditEmployeeInfo
 }) => {
   const [isReceiptModalOpen, setReceiptModalOpen] = useState(false);
   const [isDateRangeModalOpen, setIsDateRangeModalOpen] = useState(false);
@@ -95,7 +97,12 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({
 
   return (
     <Card>
-      <p className="text-onSurfaceMuted mb-4">{employee.whatsapp}</p>
+      <div className="flex justify-between items-start mb-4">
+        <p className="text-onSurfaceMuted">{employee.whatsapp}</p>
+        <Button onClick={() => onEditEmployeeInfo(employee)} variant="outline" size="sm" className="h-8">
+            <i className="fas fa-edit mr-2"></i> Editar Info
+        </Button>
+      </div>
 
       <Card className="mb-6 bg-surface/50">
         <h3 className="text-lg font-bold text-onSurface">Ações Rápidas</h3>

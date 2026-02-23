@@ -50,6 +50,7 @@ export default function App() {
   const [productToEdit, setProductToEdit] = useState<Product | null>(null);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
   const [isDeleteProductModalOpen, setDeleteProductModalOpen] = useState(false);
+  const [employeeToEdit, setEmployeeToEdit] = useState<Employee | null>(null);
 
   const [companySearchTerm, setCompanySearchTerm] = useState('');
   const [employeeSearchTerm, setEmployeeSearchTerm] = useState('');
@@ -147,10 +148,18 @@ export default function App() {
     return paidConsumptions;
   };
 
-  const handleAddEmployee = (name: string, whatsapp: string) => {
-    if (selectedCompanyId) {
+  const handleSaveEmployee = (name: string, whatsapp: string) => {
+    if (employeeToEdit) {
+      data.editEmployee(employeeToEdit.id, name, whatsapp, employeeToEdit.companyId);
+    } else if (selectedCompanyId) {
       data.addEmployee(name, whatsapp, selectedCompanyId);
     }
+    setEmployeeToEdit(null);
+  };
+
+  const openEditEmployeeModal = (employee: Employee) => {
+    setEmployeeToEdit(employee);
+    setAddEmployeeModalOpen(true);
   };
 
   const handleViewChange = (view: View) => {
@@ -248,6 +257,11 @@ export default function App() {
     setProductToEdit(null);
   }
 
+  const handleCloseEmployeeModal = () => {
+    setAddEmployeeModalOpen(false);
+    setEmployeeToEdit(null);
+  }
+
 
   // Dynamic Header Logic
   let headerTitle = "FINANSYS MARCÃO";
@@ -331,6 +345,7 @@ export default function App() {
               onEditConsumption={openEditModal}
               onDeleteConsumption={openDeleteModal}
               onAddSale={() => setIsAddingConsumption(true)}
+              onEditEmployeeInfo={openEditEmployeeModal}
             />
           );
         }
@@ -343,6 +358,7 @@ export default function App() {
                   setSelectedEmployee(employee);
                   setIsAddingConsumption(true);
                 }}
+                onEditEmployee={openEditEmployeeModal}
                 getPendingTotalForEmployee={data.getPendingTotalForEmployee}
                 searchTerm={employeeSearchTerm}
                 onSearchChange={setEmployeeSearchTerm}
@@ -475,8 +491,9 @@ export default function App() {
 
       <AddEmployeeModal
         isOpen={isAddEmployeeModalOpen}
-        onClose={() => setAddEmployeeModalOpen(false)}
-        onAddEmployee={handleAddEmployee}
+        onClose={handleCloseEmployeeModal}
+        onSaveEmployee={handleSaveEmployee}
+        employee={employeeToEdit}
       />
 
       <ConfirmDeleteModal

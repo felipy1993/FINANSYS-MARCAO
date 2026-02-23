@@ -7,13 +7,23 @@ interface EmployeeListProps {
   employees: Employee[];
   onSelectEmployee: (employee: Employee) => void;
   onAddSale: (employee: Employee) => void;
+  onEditEmployee: (employee: Employee) => void;
   getPendingTotalForEmployee: (employeeId: string) => number;
   searchTerm: string;
   onSearchChange: (term: string) => void;
   companies: Company[];
 }
 
-const EmployeeList: React.FC<EmployeeListProps> = ({ employees, onSelectEmployee, onAddSale, getPendingTotalForEmployee, searchTerm, onSearchChange, companies }) => {
+const EmployeeList: React.FC<EmployeeListProps> = ({ 
+  employees, 
+  onSelectEmployee, 
+  onAddSale, 
+  onEditEmployee,
+  getPendingTotalForEmployee, 
+  searchTerm, 
+  onSearchChange, 
+  companies 
+}) => {
   return (
     <div className="space-y-6">
       <div className="relative">
@@ -35,7 +45,7 @@ const EmployeeList: React.FC<EmployeeListProps> = ({ employees, onSelectEmployee
               <div 
                 key={employee.id} 
                 onClick={() => onSelectEmployee(employee)} 
-                className="p-4 bg-surface rounded-lg border border-border cursor-pointer hover:border-primary transition-colors hover:-translate-y-1 animate-fade-in-up flex justify-between items-start"
+                className="p-4 bg-surface rounded-lg border border-border cursor-pointer hover:border-primary transition-colors hover:-translate-y-1 animate-fade-in-up flex justify-between items-start group"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
                 <div>
@@ -48,16 +58,28 @@ const EmployeeList: React.FC<EmployeeListProps> = ({ employees, onSelectEmployee
                     Pendente: R$ {pendingTotal.toFixed(2)}
                   </p>
                 </div>
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onAddSale(employee);
-                  }}
-                  className="p-2 bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition-colors"
-                  title="Nova Venda"
-                >
-                  <i className="fas fa-cart-plus text-xl"></i>
-                </button>
+                <div className="flex flex-col gap-2">
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onAddSale(employee);
+                    }}
+                    className="p-2 bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition-colors"
+                    title="Nova Venda"
+                  >
+                    <i className="fas fa-cart-plus text-lg"></i>
+                  </button>
+                  <button 
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEditEmployee(employee);
+                    }}
+                    className="p-2 bg-onSurface/5 text-onSurfaceMuted rounded-full hover:bg-onSurface/10 hover:text-onSurface transition-colors"
+                    title="Editar Cliente"
+                  >
+                    <i className="fas fa-edit text-lg"></i>
+                  </button>
+                </div>
               </div>
             )
           })}

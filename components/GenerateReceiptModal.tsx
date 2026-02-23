@@ -27,7 +27,13 @@ const GenerateReceiptModal: React.FC<GenerateReceiptModalProps> = ({ isOpen, onC
   
   const handleOpenWhatsApp = () => {
     // Sanitize phone number (remove anything that's not a digit)
-    const sanitizedNumber = whatsappNumber.replace(/\D/g, '');
+    let sanitizedNumber = whatsappNumber.replace(/\D/g, '');
+    
+    // Se o número não começar com 55 (código do Brasil), adiciona automaticamente
+    if (sanitizedNumber.length > 0 && !sanitizedNumber.startsWith('55')) {
+      sanitizedNumber = '55' + sanitizedNumber;
+    }
+
     const whatsappUrl = `https://wa.me/${sanitizedNumber}?text=${encodeURIComponent(receiptText)}`;
     window.open(whatsappUrl, '_blank');
   };

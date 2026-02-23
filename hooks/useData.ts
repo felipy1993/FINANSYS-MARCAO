@@ -290,6 +290,19 @@ const useData = () => {
     return newEmployee;
   }, []);
 
+  const editEmployee = useCallback(async (employeeId: string, name: string, whatsapp: string, companyId: string) => {
+    await updateDoc(doc(db, 'employees', employeeId), { name, whatsapp, companyId });
+  }, []);
+
+  const deleteEmployee = useCallback(async (employeeId: string) => {
+    // Check if employee has consumptions
+    const hasConsumptions = consumptions.some(c => c.employeeId === employeeId);
+    if (hasConsumptions) {
+      throw new Error('Não é possível excluir um funcionário que possui consumos registrados.');
+    }
+    await deleteDoc(doc(db, 'employees', employeeId));
+  }, [consumptions]);
+
   const updateStock = useCallback(async (productId: string, delta: number) => {
     const product = products.find(p => p.id === productId);
     if (product) {
@@ -395,6 +408,8 @@ const useData = () => {
     editProduct,
     deleteProduct,
     addEmployee,
+    editEmployee,
+    deleteEmployee,
     updateStock,
     getMonthlyRevenue,
     getCompanyPerformance,

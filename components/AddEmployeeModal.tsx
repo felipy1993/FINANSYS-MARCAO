@@ -1,26 +1,36 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Modal } from './ui/Modal';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
+import { Employee } from '../types';
 
 interface AddEmployeeModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddEmployee: (name: string, whatsapp: string) => void;
+  onSaveEmployee: (name: string, whatsapp: string) => void;
+  employee?: Employee | null;
 }
 
-const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, onAddEmployee }) => {
+const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, onSaveEmployee, employee }) => {
   const [name, setName] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
+
+  useEffect(() => {
+    if (employee) {
+      setName(employee.name);
+      setWhatsapp(employee.whatsapp || '');
+    } else {
+      setName('');
+      setWhatsapp('');
+    }
+  }, [employee, isOpen]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (name.trim()) {
-      onAddEmployee(name.trim(), whatsapp.trim());
-      setName('');
-      setWhatsapp('');
-      onClose();
+      onSaveEmployee(name.trim(), whatsapp.trim());
+      handleClose();
     }
   };
   
@@ -31,11 +41,11 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
   }
 
   return (
-    <Modal isOpen={isOpen} onClose={handleClose} title="Cadastrar Novo Funcionário">
+    <Modal isOpen={isOpen} onClose={handleClose} title={employee ? "Editar Cliente" : "Cadastrar Novo Cliente"}>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
           <label htmlFor="employeeName" className="block text-sm font-medium text-onSurfaceMuted mb-1">
-            Nome do Funcionário
+            Nome do Cliente
           </label>
           <Input
             id="employeeName"
@@ -49,14 +59,15 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
         </div>
         <div>
           <label htmlFor="employeeWhatsapp" className="block text-sm font-medium text-onSurfaceMuted mb-1">
-            WhatsApp (Opcional)
+            WhatsApp (DDD + Número)
           </label>
           <Input
             id="employeeWhatsapp"
             type="text"
             value={whatsapp}
             onChange={(e) => setWhatsapp(e.target.value)}
-            placeholder="Ex: 5511987654321"
+            placeholder="Ex: 17991234567"
+            noUppercase
           />
         </div>
         <div className="flex justify-end gap-3 pt-4">
@@ -64,7 +75,7 @@ const AddEmployeeModal: React.FC<AddEmployeeModalProps> = ({ isOpen, onClose, on
             Cancelar
           </Button>
           <Button type="submit" disabled={!name.trim()}>
-            Salvar
+            {employee ? "Atualizar" : "Salvar"}
           </Button>
         </div>
       </form>

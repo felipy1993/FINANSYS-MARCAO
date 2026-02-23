@@ -209,10 +209,10 @@ const AddConsumptionView: React.FC<AddConsumptionViewProps> = ({
                   <label htmlFor="newEmployeeName" className="block text-sm font-medium text-onSurfaceMuted mb-1">Nome do Novo Funcionário</label>
                   <Input id="newEmployeeName" value={newEmployeeName} onChange={e => setNewEmployeeName(e.target.value)} placeholder="Ex: João da Silva" autoFocus />
                </div>
-               <div>
-                  <label htmlFor="newEmployeeWhatsapp" className="block text-sm font-medium text-onSurfaceMuted mb-1">WhatsApp (Opcional)</label>
-                  <Input id="newEmployeeWhatsapp" value={newEmployeeWhatsapp} onChange={e => setNewEmployeeWhatsapp(e.target.value)} placeholder="Ex: 5511987654321" />
-               </div>
+                <div>
+                   <label htmlFor="newEmployeeWhatsapp" className="block text-sm font-medium text-onSurfaceMuted mb-1">WhatsApp (DDD + Número)</label>
+                   <Input id="newEmployeeWhatsapp" value={newEmployeeWhatsapp} onChange={e => setNewEmployeeWhatsapp(e.target.value)} placeholder="Ex: 17991234567" noUppercase />
+                </div>
                <div>
                   <label htmlFor="newEmployeeCompany" className="block text-sm font-medium text-onSurfaceMuted mb-1">Empresa</label>
                   <Select id="newEmployeeCompany" value={newEmployeeCompanyId} onChange={e => setNewEmployeeCompanyId(e.target.value)}>
