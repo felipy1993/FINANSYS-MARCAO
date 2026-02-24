@@ -41,43 +41,67 @@ const EmployeeList: React.FC<EmployeeListProps> = ({
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {employees.map((employee, index) => {
             const pendingTotal = getPendingTotalForEmployee(employee.id);
+            const hasHighDebt = pendingTotal >= 50;
+            
             return (
               <div 
                 key={employee.id} 
                 onClick={() => onSelectEmployee(employee)} 
-                className="p-4 bg-surface rounded-lg border border-border cursor-pointer hover:border-primary transition-colors hover:-translate-y-1 animate-fade-in-up flex justify-between items-start group"
+                className="p-5 glass-card rounded-2xl cursor-pointer hover:border-primary/50 transition-all hover:scale-[1.02] animate-fade-in-up flex justify-between items-center group relative overflow-hidden"
                 style={{ animationDelay: `${index * 50}ms` }}
               >
-                <div>
-                  <p className="font-semibold text-lg text-onSurface">{employee.name}</p>
-                  <p className="text-xs text-primary font-medium uppercase tracking-wider">
+                {hasHighDebt && (
+                    <div className="absolute top-0 right-0">
+                        <div className="bg-red-500 text-white text-[8px] font-black py-0.5 px-4 rotate-45 translate-x-3 translate-y-1 shadow-lg">
+                            DÉBITO
+                        </div>
+                    </div>
+                )}
+                
+                <div className="min-w-0 flex-1">
+                  <p className="font-black text-lg text-onSurface truncate pr-4">{employee.name}</p>
+                  <p className="text-[10px] text-primary font-black uppercase tracking-widest mt-0.5 opacity-80">
                     {companies.find(c => c.id === employee.companyId)?.name || 'Sem Empresa'}
                   </p>
-                  <p className="text-sm text-onSurfaceMuted mt-1">{employee.whatsapp}</p>
-                  <p className={`mt-2 font-bold ${pendingTotal > 0 ? 'text-red-400' : 'text-green-400'}`}>
-                    Pendente: R$ {pendingTotal.toFixed(2)}
-                  </p>
+                  
+                  <div className="flex items-center gap-2 mt-3">
+                      <div className={`px-2 py-1 rounded-lg text-xs font-black ${pendingTotal > 0 ? 'bg-red-500/10 text-red-500' : 'bg-secondary/10 text-secondary'}`}>
+                        R$ {pendingTotal.toFixed(2)}
+                      </div>
+                      {employee.whatsapp && (
+                          <a 
+                            href={`https://wa.me/55${employee.whatsapp.replace(/\D/g, '')}`} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            onClick={(e) => e.stopPropagation()}
+                            className="bg-secondary/10 text-secondary p-1.5 rounded-lg hover:bg-secondary/20 transition-colors"
+                          >
+                              <i className="fab fa-whatsapp"></i>
+                          </a>
+                      )}
+                  </div>
                 </div>
-                <div className="flex flex-col gap-2">
+                
+                <div className="flex flex-col gap-2 ml-4">
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
                       onAddSale(employee);
                     }}
-                    className="p-2 bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition-colors"
+                    className="w-10 h-10 bg-primary/10 text-primary rounded-xl hover:bg-primary/20 transition-all hover:scale-110 flex items-center justify-center shadow-sm"
                     title="Nova Venda"
                   >
-                    <i className="fas fa-cart-plus text-lg"></i>
+                    <i className="fas fa-plus-circle text-lg"></i>
                   </button>
                   <button 
                     onClick={(e) => {
                       e.stopPropagation();
                       onEditEmployee(employee);
                     }}
-                    className="p-2 bg-onSurface/5 text-onSurfaceMuted rounded-full hover:bg-onSurface/10 hover:text-onSurface transition-colors"
+                    className="w-10 h-10 bg-onSurface/5 text-onSurfaceMuted rounded-xl hover:bg-onSurface/10 hover:text-onSurface transition-all flex items-center justify-center"
                     title="Editar Cliente"
                   >
-                    <i className="fas fa-edit text-lg"></i>
+                    <i className="fas fa-edit"></i>
                   </button>
                 </div>
               </div>
