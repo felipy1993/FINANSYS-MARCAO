@@ -1,7 +1,7 @@
 
 import { Employee, Consumption, Product, Payment } from '../types';
 
-export type ReceiptType = 'payment' | 'daily' | 'period';
+export type ReceiptType = 'payment' | 'daily' | 'period' | 'pending';
 
 export interface DateInfo {
     payment?: Payment;
@@ -37,6 +37,9 @@ export const formatReceiptText = (
         const end = new Date(dateInfo.endDate).toLocaleDateString('pt-BR', { timeZone: 'UTC' });
         header = `SALGADOS DO MARCÃO\nEXTRATO DE CONSUMO\nPeríodo: ${start} a ${end}\nCliente: ${employee.name}\n\nItens Consumidos no Período:`;
         footer = `\nTOTAL NO PERÍODO: R$ ${total.toFixed(2)}\n\nQualquer dúvida, estou à disposição.`;
+    } else if (receiptType === 'pending') {
+        header = `SALGADOS DO MARCÃO\nFECHAMENTO TOTAL PENDENTE\nData: ${new Date().toLocaleDateString('pt-BR')}\nCliente: ${employee.name}\n\nRelatório de todos os consumos não pagos:`;
+        footer = `\nTOTAL PENDENTE: R$ ${total.toFixed(2)}\n\nFavor realizar o pagamento assim que possível. Obrigado!`;
     } else {
         return "Erro ao gerar recibo: informações inválidas.";
     }

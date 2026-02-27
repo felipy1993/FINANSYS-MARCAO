@@ -16,6 +16,7 @@ interface EmployeeDetailProps {
   consumptions: Consumption[];
   products: Product[];
   onRecordPayment: (employeeId: string, amount: number, method: Payment['method']) => Promise<Consumption[]>;
+  onRevertPayment: (consumptionId: string) => Promise<void>;
   getPendingTotalForEmployee: (employeeId: string) => number;
   onEditConsumption: (consumption: Consumption) => void;
   onDeleteConsumption: (consumptionId: string) => void;
@@ -28,6 +29,7 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({
   consumptions, 
   products, 
   onRecordPayment, 
+  onRevertPayment,
   getPendingTotalForEmployee, 
   onEditConsumption, 
   onDeleteConsumption,
@@ -51,7 +53,7 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({
   
   const handleGenerateReceipt = useCallback((
     receiptConsumptions: Consumption[],
-    receiptType: 'payment' | 'daily' | 'period',
+    receiptType: 'payment' | 'daily' | 'period' | 'pending',
     dateInfo: { payment?: Payment; startDate?: string; endDate?: string }
   ) => {
     setReceiptModalOpen(true);
@@ -80,6 +82,10 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({
   const handleDailyReceipt = () => {
     const todayConsumptions = consumptions.filter(c => isSameDay(new Date(c.date), new Date()));
     handleGenerateReceipt(todayConsumptions, 'daily', {});
+  };
+  
+  const handlePendingReceipt = () => {
+    handleGenerateReceipt(pendingConsumptions, 'pending', {});
   };
 
   const handlePeriodReceipt = (startDate: string, endDate: string) => {
@@ -112,6 +118,9 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({
           </Button>
           <Button onClick={handleDailyReceipt} variant="outline" className="w-full">
             <i className="fas fa-calendar-day mr-2"></i> Recibo do Dia
+          </Button>
+          <Button onClick={handlePendingReceipt} variant="outline" className="w-full">
+            <i className="fas fa-file-invoice-dollar mr-2"></i> Fechamento Total
           </Button>
           <Button onClick={() => setIsDateRangeModalOpen(true)} variant="outline" className="w-full">
             <i className="fas fa-calendar-alt mr-2"></i> Recibo Período
@@ -156,7 +165,16 @@ const EmployeeDetail: React.FC<EmployeeDetailProps> = ({
         {paidConsumptions.length > 0 && (
           <div>
             <h4 className="font-bold text-green-400 mb-2">Pagos</h4>
-            {paidConsumptions.map(c => <ConsumptionItemView key={c.id} consumption={c} products={products} onEdit={() => onEditConsumption(c)} onDelete={() => onDeleteConsumption(c.id)} />)}
+            {paidConsumptions.map(c => (
+              <ConsumptionItemView 
+                key={c.id} 
+                consumption={c} 
+                products={products} 
+                onEdit={() => onEditConsumption(c)} 
+                onDelete={() => onDeleteConsumption(c.id)}
+                onRevert={() => onRevertPayment(c.id)}
+              />
+            ))}
           </div>
         )}
         {consumptions.length === 0 && <p className="text-onSurfaceMuted">Nenhum consumo registrado.</p>}

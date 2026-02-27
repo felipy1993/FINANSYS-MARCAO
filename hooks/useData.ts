@@ -217,9 +217,18 @@ const useData = () => {
       if (!consumptionToDelete) return;
 
       const batch = writeBatch(db);
+      
+      // Move to trash collection for safety before permanent removal
+      const trashRef = doc(db, 'trash', consumptionId);
+      batch.set(trashRef, {
+        ...consumptionToDelete,
+        deletedAt: new Date().toISOString(),
+        reason: 'user_delete'
+      });
+
       consumptionToDelete.items.forEach(item => {
           const product = products.find(p => p.id === item.productId);
-          if (product) {
+          if (product && item.productId !== 'partial-payment' && item.productId !== 'payment-adjustment') {
               const productRef = doc(db, 'products', product.id);
               batch.update(productRef, { stock: product.stock + item.quantity });
           }
@@ -232,6 +241,7 @@ const useData = () => {
   const recordPayment = useCallback(async (employeeId: string, amount: number, method: Payment['method']): Promise<{ paidConsumptions: Consumption[] }> => {
     const paymentDate = new Date().toISOString();
     
+    // Sort consumptions by date (oldest first)
     const unpaidConsumptions = consumptions
         .filter(c => c.employeeId === employeeId && !c.payment)
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
@@ -241,8 +251,14 @@ const useData = () => {
     const batch = writeBatch(db);
 
     for (const consumption of unpaidConsumptions) {
+        if (remainingAmount <= 0.005) break; // Use a small epsilon for float comparison
+
         const consumptionTotal = calculateConsumptionTotal(consumption);
-        if (remainingAmount >= consumptionTotal) {
+        
+        if (consumptionTotal <= 0) continue; // Skip zero or negative total entries if any
+
+        if (remainingAmount >= consumptionTotal - 0.005) {
+            // Full payment for this consumption
             remainingAmount -= consumptionTotal;
 
             const paidConsumption = {
@@ -255,6 +271,41 @@ const useData = () => {
             batch.set(doc(db, 'consumptions', consumption.id), paidConsumption);
             newlyPaidConsumptions.push(paidConsumption);
         } else {
+            // Partial payment for this entry
+            // 1. Create a NEW consumption entry for the PAID portion
+            const partialPaidId = `con-p-${Date.now()}`;
+            const partialPaidEntry: Consumption = {
+                id: partialPaidId,
+                employeeId: employeeId,
+                date: paymentDate,
+                items: [{
+                    productId: 'partial-payment',
+                    quantity: 1,
+                    priceAtTime: remainingAmount
+                }],
+                payment: {
+                    date: paymentDate,
+                    method: method
+                }
+            };
+            batch.set(doc(db, 'consumptions', partialPaidId), partialPaidEntry);
+            newlyPaidConsumptions.push(partialPaidEntry);
+
+            // 2. Update the ORIGINAL entry with a negative adjustment to reduce its pending total
+            const updatedConsumption: Consumption = {
+                ...consumption,
+                items: [
+                    ...consumption.items,
+                    {
+                        productId: 'payment-adjustment',
+                        quantity: 1,
+                        priceAtTime: -remainingAmount
+                    }
+                ]
+            };
+            batch.set(doc(db, 'consumptions', consumption.id), updatedConsumption);
+            
+            remainingAmount = 0;
             break;
         }
     }
@@ -293,6 +344,36 @@ const useData = () => {
   const editEmployee = useCallback(async (employeeId: string, name: string, whatsapp: string, companyId: string) => {
     await updateDoc(doc(db, 'employees', employeeId), { name, whatsapp, companyId });
   }, []);
+
+  const revertPayment = useCallback(async (consumptionId: string) => {
+    const consumption = consumptions.find(c => c.id === consumptionId);
+    if (!consumption || !consumption.payment) return;
+
+    const batch = writeBatch(db);
+
+    // If it's a 'partial-payment' entry (internal entry for payment portion), we just delete it
+    if (consumption.items.some(item => item.productId === 'partial-payment')) {
+      batch.delete(doc(db, 'consumptions', consumptionId));
+      
+      // We should also find the corresponding adjustment in the original entry if possible
+      // However, usually the user will manually revert the adjustment from the original entry too
+      // or we can try to find entries with 'payment-adjustment' for this employee around the same time.
+      // For simplicity in this first version, we let the user revert both if they were split.
+    } else {
+      // If it's a regular entry that was marked as paid, we just clear the payment info
+      // AND remove any 'payment-adjustment' items if they exist (though usually they are on unpaid ones)
+      const updatedItems = consumption.items.filter(item => item.productId !== 'payment-adjustment');
+      
+      const updatedConsumption = {
+        ...consumption,
+        items: updatedItems,
+        payment: null
+      };
+      batch.set(doc(db, 'consumptions', consumptionId), updatedConsumption);
+    }
+
+    await batch.commit();
+  }, [consumptions]);
 
   const deleteEmployee = useCallback(async (employeeId: string) => {
     // Check if employee has consumptions
@@ -398,6 +479,7 @@ const useData = () => {
     addConsumption,
     editConsumption,
     deleteConsumption,
+    revertPayment,
     recordPayment,
     getPendingTotalForEmployee,
     getPendingTotalForCompany,

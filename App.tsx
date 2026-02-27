@@ -148,6 +148,10 @@ export default function App() {
     return paidConsumptions;
   };
 
+  const handleRevertPayment = async (consumptionId: string) => {
+    await data.revertPayment(consumptionId);
+  };
+
   const handleSaveEmployee = (name: string, whatsapp: string) => {
     if (employeeToEdit) {
       data.editEmployee(employeeToEdit.id, name, whatsapp, employeeToEdit.companyId);
@@ -341,6 +345,7 @@ export default function App() {
               consumptions={data.consumptions.filter(c => c.employeeId === selectedEmployee.id)}
               products={data.products}
               onRecordPayment={handleRecordPayment}
+              onRevertPayment={handleRevertPayment}
               getPendingTotalForEmployee={data.getPendingTotalForEmployee}
               onEditConsumption={openEditModal}
               onDeleteConsumption={openDeleteModal}
